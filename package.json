@@ -35,7 +35,7 @@
     "optic:diff": "optic diff src/api-docs/openapi.yml --check --web --base main",
     "generate:api-docs": "rm -rf docs && npx redocly build-docs src/api-docs/openapi.yml -o docs/api-docs.html",
     "pw:open": "npx playwright test --ui",
-    "pw:open-local": "npx playwright test --ui --c pw/config/local.config.ts",
+    "pw:open-local": "npx playwright test --ui -c pw/config/local.config.ts",
     "pw:run-local": "npx playwright test -c pw/config/local.config.ts"
   },
   "dependencies": {
