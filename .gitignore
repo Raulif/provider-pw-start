@@ -1,0 +1,36 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+dist
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env
+
+npm-debug.log*
+
+# Cypress
+**/videos
+**/screenshots
+**/downloads
+**/cypress.env.json
+# for checking kafka events
+cypress/movie-events.log
+
+# Prisma
+prisma/dev.db  
+prisma/dev.db-journal
+
+# Pact
+pacts
+node_modules/
+/test-results
+/playwright-report/
+/blob-report/
+/playwright/.cache/

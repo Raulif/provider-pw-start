@@ -1,0 +1,85 @@
+name: Run e2e tests with Cypress
+on:
+  pull_request:
+  workflow_dispatch:
+
+# if this branch is pushed back to back, cancel the older branch's workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  DATABASE_URL: 'file:./dev.db'
+  PORT: 3001
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+  KAFKAJS_NO_PARTITIONER_WARNING: 1 # less kafka noise
+
+jobs:
+  cy-e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Read Node version from .nvmrc
+        id: node_version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate OpenAPI docs from code
+        run: |
+          npm install -D tsx
+          npm run generate:openapi
+
+      # Start Kafka before running the tests
+      # Locally if no Kafka, the kafka version of the e2e test just doesn't run
+
+      - name: Start Kafka
+        continue-on-error: true # if we hit the docker pull limit, no kafka
+        run: docker compose -f ./src/events/kafka-cluster.yml up -d --no-recreate
+
+      - name: Cypress e2e tests 🧪
+        id: cypress-tests
+        uses: cypress-io/github-action@v6.7.7
+        with:
+          start: npm start
+          config-file: cypress/config/local.config.ts
+          # record: true
+          # group: local
+          # tag: local
+
+      # We do schema testing within the api e2e
+      # We publish the OpenAPI spec on main, once after the PR is merged
+      # Pact likes to have some file/evidence that the OpenAPI spec was tested
+      # This section handles that need
+
+      - name: Generate Verification Result for Success
+        if: steps.cypress-tests.conclusion == 'success'
+        run: echo "All Cypress tests passed." > cypress/verification-result.txt
+
+      - name: Generate Verification Result for Failure
+        if: steps.cypress-tests.conclusion != 'success'
+        run: echo "Not all Cypress tests passed." > cypress/verification-result.txt
+
+      - name: Commit and push verification result
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: 'GitHub Actions'
+          author_email: 'actions@github.com'
+          message: 'Update verification results'
+          add: 'cypress/verification-result.txt'
+          push: true
+
+      # Stop Kafka after tests are completed
+      - name: Stop Kafka
+        continue-on-error: true
+        if: always()
+        run: docker compose -f ./src/events/kafka-cluster.yml down
