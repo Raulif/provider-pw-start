@@ -22,6 +22,7 @@ test.describe('CRUD movie with events', () => {
   }
 
   test.beforeAll('should get a token with helper', async ({ apiRequest }) => {
+    // Check if KAfka is running, otherwise skip test
     const responseCode = runCommand(
       `curl -s -o /dev/null -w "%{http_code}" ${process.env.KAFKA_UI_URL}`
     )
