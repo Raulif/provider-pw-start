@@ -14,6 +14,7 @@ test.describe('token acquisition', (): void => {
 
   test('should get a token with helper', async ({ request }) => {
     const {
+      // @ts-ignore
       body: { token },
       status
     } = await apiRequest({

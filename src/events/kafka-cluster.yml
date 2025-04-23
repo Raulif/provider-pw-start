@@ -5,7 +5,7 @@ version: '3.8'  # Version of Docker Compose file format
 
 services:
   kafka:
-    image: bitnami/kafka:latest  # Kafka Docker image from Bitnami repository (multi-architecture support).
+    image: bitnami/kafka:3.9.0  # Kafka Docker image from Bitnami repository (multi-architecture support).
     platform: linux/amd64  # Ensures compatibility with AMD64 architecture to avoid ARM issues on Apple Silicon.
     depends_on:
       - zookeeper  # Kafka requires Zookeeper for managing configurations and cluster state.
@@ -45,7 +45,7 @@ services:
       # Maps a persistent volume to store Kafka logs and data, preventing data loss on restarts.
 
   init-kafka:
-    image: bitnami/kafka:latest  # Kafka image, the same as the main Kafka broker
+    image: bitnami/kafka:3.9.0  # Kafka image, the same as the main Kafka broker
     depends_on:
       - kafka  # Will run after the Kafka broker is up and running
     entrypoint: ['/bin/sh', '-c']  # Defines the shell entry point for this container
@@ -72,7 +72,7 @@ services:
       DYNAMIC_CONFIG_ENABLED: 'true'  # Enables dynamic configuration in the UI
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:6.0.14  # Zookeeper image for managing Kafka configurations and metadata
+    image: confluentinc/cp-zookeeper:latest  # Zookeeper image for managing Kafka configurations and metadata
     platform: linux/amd64  # Ensures compatibility with AMD64 architecture
     ports:
       - '22181:2181'  # Exposes Zookeeper on port 2181 for external access
