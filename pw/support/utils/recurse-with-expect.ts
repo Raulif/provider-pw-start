@@ -16,7 +16,7 @@
 
 export async function recurseWithExpect(
   fn: () => Promise<void>,
-  options?: { retries: number; interval?: number; timeout?: number }
+  options?: { retries?: number; interval?: number; timeout?: number }
 ): Promise<void> {
   const retries = options?.retries ?? 10
   const interval = options?.interval ?? 500 // milliseconds
