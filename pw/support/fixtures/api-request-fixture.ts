@@ -9,18 +9,18 @@ export type ApiRequestParams = {
   headers?: Record<string, string>
 }
 
-type ApiRequestResponse<T = unknown> = {
+export type ApiRequestResponse<T = unknown> = {
   status: number
   body: T
 }
 
-const test = base.extend<{
+export const test = base.extend<{
   apiRequest: <T = unknown>(
     params: ApiRequestParams
   ) => Promise<ApiRequestResponse<T>>
 }>({
   apiRequest: async ({ request }, use) => {
-    const customApiRequest = async <T>({
+    const apiRequest = async <T>({
       method,
       url,
       baseUrl,
@@ -40,8 +40,6 @@ const test = base.extend<{
         body: response.body as T
       }
     }
-    await use(customApiRequest)
+    await use(apiRequest)
   }
 })
-
-export { test }
